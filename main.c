@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+// Começar em 150 o branco, o sensor não capta menos que isso
 
 struct pertSens{ // Pertinencia
     double sE; // Sensor Esquerdo
@@ -8,28 +9,34 @@ struct pertSens{ // Pertinencia
     double sD; // Sensor Direita
 };
 
+struct pertSens ptSens;
+
 struct pertVeloMot{
     double mML; // Velocidade Muito Lenta
-    double mL; // Velcidade Lenta
+    double mL; // Velocidade Lenta
     double mM; // Velocidade Média
     double mLR; // Velocidade Levemente Rápida
     double mR; // Velocidade Rápida
     double mMR; // Velocidade Muito Rápido
 };
 
+struct pertVeloMot ptVel;
+
 struct pertSaida{
-    double ;
-    double ;
-    double ;
-    double ;
-    double ;
+    double levEsq; // Levemente esquerda
+    double Esq; // Esquerda
+    double Frente; // Frente
+    double levDir; // Levemente Direita
+    double Dir; // Direita
 };
 
+struct pertSaida ptSai;
+
 struct regra{
-    struct A1;
-    struct A2;
-    struct A3;
-    struct A4;
+    double A1;
+    double A2;
+    double A3;
+    double A4;
 };
 
 struct regra R1;
@@ -64,7 +71,7 @@ struct regra R27;
 
 // Conjuntos Fuzzy
 //
-// Branco          Cinza             Pretp
+// Branco          Cinza             Preto
 //1|****           -----             xxxx|
 // |   . *        - .  . -         x .   |
 // |   .   *    -   .  .   -     x   .   |
@@ -81,10 +88,58 @@ struct regra R27;
 // P7 = 680
 // P8 = 700
 
+void calculaPertinenciaSensor (double valor, double P1, double P2, double P3, double P4, double P5, double P6, double P7, double P8){
+    if(valor<P1){
+        ptSens.sE=1.0;
+    }
+    if(valor>=P1 && valor<P3){
+        ptSens.sE=(P3-valor) / (P3-P1);
+    }
+    if(valor>=P3){
+        ptSens.sE=0.0;
+    }
+
+    if(valor<P2){
+        ptSens.sC=0.0;
+    }
+    if(valor>=P2 && valor<P4){
+        ptSens.sC = (valor-P2) / (P4-P2);
+    }
+    if(valor>=P4 && valor<P5){
+        ptSens.sC = 1.0;
+    }
+    if(valor>=P5 && valor<P7){
+        ptSens.sC = (P7-valor)/(P7-P5);
+    }
+    if(valor>=P7){
+        ptSens.sC = 0.0;
+    }
+
+    if(valor<P6){
+        ptSens.sD = 0.0;
+    }
+    if(valor>=P6 && valor<P8){
+        ptSens.sD = (valor-P6)/(P8-P6);
+    }
+    if(valor>=P8){
+        ptSens.sD = 1.0;
+    }
+}
+
+void calculaPertinenciaMotor (double valor, double P1, double P2, double P3, double P4, double P5, double P6, double P7, double P8){
+
+}
+
+void avaliaFuzzy (){
+
+}
+
+void calculaSaida(){
+
+}
 
 int main() {
-    printf("Hello, World!\n");
-    return 0;
+
 }
 
 
