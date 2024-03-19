@@ -1,1 +1,2 @@
-This is a repository used to storage my college projects from my IA Topics class, every version of the project is a different project.
+This project uses Fuzzy Logic to control a mini robot that follows a dark path created with tape.
+The Fuzzy logic controls the speed and direction that the robot decides to use, More on that on the Main file.
