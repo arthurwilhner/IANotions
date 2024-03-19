@@ -293,8 +293,6 @@ void avaliaFuzzy() {
 
 }
 
-
-
 void calculaSaida() {
     // Definindo valores para cada ação
     double valorLevEsq;
