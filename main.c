@@ -32,6 +32,8 @@ struct pertSaida{
 
 struct pertSaida ptSai;
 
+double saida;
+
 struct regra{
     double A1;
     double A2;
@@ -121,7 +123,7 @@ void calculaPertinenciaSensor(double valor, char sensor, double P1, double P2, d
 }
 
 void calculaPertinenciaMotor(double valor, double P1, double P2, double P3, double P4, double P5, double P6) {
-    // Resetando valores de pertinência
+    // Reset valores de pertinência
     ptVel.mML = ptVel.mL = ptVel.mM = ptVel.mLR = ptVel.mR = ptVel.mMR = 0.0;
 
     // Muito Lenta [0, P1]
@@ -148,8 +150,6 @@ void calculaPertinenciaMotor(double valor, double P1, double P2, double P3, doub
         ptVel.mLR = (valor - P4) / (P6 - P4);
     }
 
-    // Rápida e Muito Rápida serão definidas se necessário, dependendo dos pontos P5, P6, e além,
-    // adaptando a lógica acima de acordo com os intervalos específicos e desejados.
 }
 
 void avaliaFuzzy() {
@@ -297,31 +297,47 @@ void avaliaFuzzy() {
 
 void calculaSaida() {
     // Definindo valores para cada ação
-    double valorLevEsq = -2;
-    double valorEsq = -4;
-    double valorFrente = 0;
-    double valorLevDir = 2;
-    double valorDir = 4;
+    double valorLevEsq;
+    double valorEsq;
+    double valorFrente;
+    double valorLevDir;
+    double valorDir;
 
-    // Calculando o numerador da média ponderada
-    double numerador = ptSai.levEsq * valorLevEsq + ptSai.Esq * valorEsq +
-                       ptSai.Frente * valorFrente + ptSai.levDir * valorLevDir +
-                       ptSai.Dir * valorDir;
+    double num = 0;
+    double den = 0;
 
-    // Calculando o denominador da média ponderada
-    double denominador = ptSai.levEsq + ptSai.Esq + ptSai.Frente + ptSai.levDir + ptSai.Dir;
+    valorLevEsq = (0+50)/2;
+    valorEsq = (50+100)/2;
+    valorFrente = (100+150)/2;
+    valorLevDir = (150+200)/2;
+    valorDir = (200+250)/2;
 
-    // Evitando divisão por zero
-    if (denominador == 0) {
-        printf("Ação Indefinida (denominador é 0).\n");
-        return;
+    if(ptSai.Esq){
+        num += valorEsq*ptSai.Esq;
+        den += ptSai.Esq;
     }
 
-    // Calculando a média ponderada
-    double saida = numerador / denominador;
+    if(ptSai.levEsq){
+        num += valorLevEsq*ptSai.levEsq;
+        den += ptSai.levEsq;
+    }
 
-    // Imprimindo a saída calculada
-    printf("Valor de Saída (Direção): %f\n", saida);
+    if(ptSai.Frente){
+        num += valorFrente*ptSai.Frente;
+        den += ptSai.Frente;
+    }
+
+    if(ptSai.Dir){
+        num += valorDir*ptSai.Dir;
+        den += ptSai.Dir;
+    }
+
+    if(ptSai.levDir){
+        num += valorLevDir*ptSai.levDir;
+        den += ptSai.levDir;
+    }
+
+    saida = num / den;
 }
 
 
