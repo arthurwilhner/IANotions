@@ -88,55 +88,242 @@ struct regra R27;
 // P7 = 680
 // P8 = 700
 
-void calculaPertinenciaSensor (double valor, double P1, double P2, double P3, double P4, double P5, double P6, double P7, double P8){
-    if(valor<P1){
-        ptSens.sE=1.0;
-    }
-    if(valor>=P1 && valor<P3){
-        ptSens.sE=(P3-valor) / (P3-P1);
-    }
-    if(valor>=P3){
-        ptSens.sE=0.0;
-    }
-
-    if(valor<P2){
-        ptSens.sC=0.0;
-    }
-    if(valor>=P2 && valor<P4){
-        ptSens.sC = (valor-P2) / (P4-P2);
-    }
-    if(valor>=P4 && valor<P5){
-        ptSens.sC = 1.0;
-    }
-    if(valor>=P5 && valor<P7){
-        ptSens.sC = (P7-valor)/(P7-P5);
-    }
-    if(valor>=P7){
-        ptSens.sC = 0.0;
-    }
-
-    if(valor<P6){
-        ptSens.sD = 0.0;
-    }
-    if(valor>=P6 && valor<P8){
-        ptSens.sD = (valor-P6)/(P8-P6);
-    }
-    if(valor>=P8){
-        ptSens.sD = 1.0;
+void calculaPertinenciaSensor(double valor, char sensor, double P1, double P2, double P3, double P4, double P5, double P6, double P7, double P8) {
+    if(sensor == 'E') {
+        if(valor < P1) {
+            ptSens.sE = 1.0;
+        } else if(valor >= P1 && valor < P3) {
+            ptSens.sE = (P3 - valor) / (P3 - P1);
+        } else {
+            ptSens.sE = 0.0;
+        }
+    } else if(sensor == 'C') {
+        if(valor < P2) {
+            ptSens.sC = 0.0;
+        } else if(valor >= P2 && valor < P4) {
+            ptSens.sC = (valor - P2) / (P4 - P2);
+        } else if(valor >= P4 && valor < P5) {
+            ptSens.sC = 1.0;
+        } else if(valor >= P5 && valor < P7) {
+            ptSens.sC = (P7 - valor) / (P7 - P5);
+        } else {
+            ptSens.sC = 0.0;
+        }
+    } else if(sensor == 'D') {
+        if(valor < P6) {
+            ptSens.sD = 0.0;
+        } else if(valor >= P6 && valor < P8) {
+            ptSens.sD = (valor - P6) / (P8 - P6);
+        } else {
+            ptSens.sD = 1.0;
+        }
     }
 }
 
-void calculaPertinenciaMotor (double valor, double P1, double P2, double P3, double P4, double P5, double P6, double P7, double P8){
+void calculaPertinenciaMotor(double valor, double P1, double P2, double P3, double P4, double P5, double P6) {
+    // Resetando valores de pertinência
+    ptVel.mML = ptVel.mL = ptVel.mM = ptVel.mLR = ptVel.mR = ptVel.mMR = 0.0;
+
+    // Muito Lenta [0, P1]
+    if (valor <= P1) {
+        ptVel.mML = 1.0;
+    }
+
+    // Lenta [P1, P2]
+    if (valor > P1 && valor < P2) {
+        ptVel.mL = (valor - P1) / (P2 - P1);
+    } else if (valor >= P2 && valor <= P3) {
+        ptVel.mL = (P3 - valor) / (P3 - P2);
+    }
+
+    // Média [P2, P4]
+    if (valor > P2 && valor < P4) {
+        ptVel.mM = (valor - P2) / (P4 - P2);
+    } else if (valor >= P4 && valor <= P5) {
+        ptVel.mM = (P5 - valor) / (P5 - P4);
+    }
+
+    // Levemente Rápida [P4, P6]
+    if (valor > P4 && valor < P6) {
+        ptVel.mLR = (valor - P4) / (P6 - P4);
+    }
+
+    // Rápida e Muito Rápida serão definidas se necessário, dependendo dos pontos P5, P6, e além,
+    // adaptando a lógica acima de acordo com os intervalos específicos e desejados.
+}
+
+void avaliaFuzzy() {
+    // Resetando a saída fuzzy para todas as direções
+    ptSai.levEsq = ptSai.Esq = ptSai.Frente = ptSai.levDir = ptSai.Dir = 0.0;
+
+    // Regra 1: PPP
+    if (ptSens.sC > 0.8) {
+        ptSai.Frente = 1.0; // Siga em frente
+    }
+
+    // Regra 2: PPB
+    if (ptSens.sE > 0.8) {
+        ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
+    }
+
+    // Regra 3: PPC
+    if (ptSens.sD > 0.8) {
+        ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
+    }
+
+    // Regra 4: PBP
+    if (ptSens.sD > 0.8) {
+        ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
+    }
+
+    // Regra 5: PBB
+    if (ptSens.sD > 0.8) {
+        ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
+    }
+
+    // Regra 6: PBC
+    if (ptSens.sD > 0.8) {
+        ptSai.Esq = 0.5; // Ajuste para a esquerda
+    }
+
+    // Regra 7: PCP
+    if (ptSens.sD > 0.8) {
+        ptSai.Esq = 0.5; // Ajuste para a esquerda
+    }
+
+    // Regra 8: PCB
+    if (ptSens.sD > 0.8) {
+        ptSai.Esq = 0.5; // Ajuste para a esquerda
+    }
+
+    // Regra 9: PCC
+    if (ptSens.sD > 0.8) {
+        ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
+    }
+
+    // Regra 10: BPP
+    if (ptSens.sD > 0.8) {
+        ptSai.levDir = 0.5; // Ajuste leve para a direita
+    }
+
+    // Regra 11: BPB
+    if (ptSens.sC > 0.8) {
+        ptSai.Frente = 1.0; // Siga em frente
+    }
+
+    // Regra 12: BPC
+    if (ptSens.sD > 0.8) {
+        ptSai.levDir = 0.5; // Ajuste leve para a direita
+    }
+
+    // Regra 13: BBP
+    if (ptSens.sD > 0.8) {
+        ptSai.Dir = 0.5; // Ajuste para a Direita
+    }
+
+    // Regra 14: BCP
+    if (ptSens.sD > 0.8) {
+        ptSai.levDir = 0.5; // Ajuste leve para a direita
+    }
+
+    // Regra 15: CPP
+    if (ptSens.sD > 0.8) {
+        ptSai.levDir = 0.5; // Ajuste leve para a direita
+    }
+
+    // Regra 16: CPC
+    if (ptSens.sD > 0.8) {
+        ptSai.levDir = 0.5; // Ajuste leve para a direita
+    }
+
+    // Regra 17: CBP
+    if (ptSens.sD > 0.8) {
+        ptSai.levDir = 0.5; // Ajuste leve para a direita
+    }
+
+    // Regra 18: CPB
+    if (ptSens.sD > 0.8) {
+        ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
+    }
+
+    // Regra 19: BBB
+    if (ptSens.sD > 0.8) {
+        ptSai.Dir = 0.5; // Ajuste para a Direita
+    }
+
+    // Regra 20: BBC
+    if (ptSens.sD > 0.8) {
+        ptSai.Dir = 0.5; // Ajuste para a Direita
+    }
+
+    // Regra 21: BCB
+    if (ptSens.sD > 0.8) {
+        ptSai.Dir = 0.5; // Ajuste para a Direita
+    }
+
+    // Regra 22: BCC
+    if (ptSens.sD > 0.8) {
+        ptSai.Dir = 0.5; // Ajuste para a Direita
+    }
+
+    // Regra 23: CCP
+    if (ptSens.sD > 0.8) {
+        ptSai.Dir = 0.5; // Ajuste para a Direita
+    }
+
+    // Regra 24: CBB
+    if (ptSens.sD > 0.8) {
+        ptSai.Esq = 0.5; // Ajuste para a esquerda
+    }
+
+    // Regra 25: CBC
+    if (ptSens.sD > 0.8) {
+        ptSai.Esq = 0.5; // Ajuste para a esquerda
+    }
+
+    // Regra 26: CCB
+    if (ptSens.sD > 0.8) {
+        ptSai.Esq = 0.5; // Ajuste para a esquerda
+    }
+
+    // Regra 27: CCC
+    if (ptSens.sD > 0.8) {
+        ptSai.Esq = 0.7; // Ajuste para a esquerda
+    }
 
 }
 
-void avaliaFuzzy (){
 
+
+void calculaSaida() {
+    // Definindo valores para cada ação
+    double valorLevEsq = -2;
+    double valorEsq = -4;
+    double valorFrente = 0;
+    double valorLevDir = 2;
+    double valorDir = 4;
+
+    // Calculando o numerador da média ponderada
+    double numerador = ptSai.levEsq * valorLevEsq + ptSai.Esq * valorEsq +
+                       ptSai.Frente * valorFrente + ptSai.levDir * valorLevDir +
+                       ptSai.Dir * valorDir;
+
+    // Calculando o denominador da média ponderada
+    double denominador = ptSai.levEsq + ptSai.Esq + ptSai.Frente + ptSai.levDir + ptSai.Dir;
+
+    // Evitando divisão por zero
+    if (denominador == 0) {
+        printf("Ação Indefinida (denominador é 0).\n");
+        return;
+    }
+
+    // Calculando a média ponderada
+    double saida = numerador / denominador;
+
+    // Imprimindo a saída calculada
+    printf("Valor de Saída (Direção): %f\n", saida);
 }
 
-void calculaSaida(){
-
-}
 
 int main() {
 
