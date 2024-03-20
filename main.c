@@ -4,9 +4,10 @@
 // Começar em 150 o branco, o sensor não capta menos que isso
 
 struct pertSens{ // Pertinencia
-    double sE; // Sensor Esquerdo
-    double sC; // Sensor Centro
-    double sD; // Sensor Direita
+    double s1;
+    double s2;
+    double s3;
+    double s4;
 };
 
 struct pertSens ptSens;
@@ -81,43 +82,64 @@ struct regra R27;
 // |   .    -  *    .  .     x -     .   |
 //0|___.__-______*__.__.___x_____-___.___|
 // 0  P1 P2     P3 P4  P5 P6    P7  P8   1
-// P1 = 200
-// P2 = 300
-// P3 = 400
-// P4 = 500
-// P5 = 550
-// P6 = 600
-// P7 = 680
-// P8 = 700
+// P1 = 175
+// P2 = 200
+// P3 = 250
+// P4 = 300
+// P5 = 350
+// P6 = 400
+// P7 = 450
+// P8 = 500
+// P9 = 550
+// P10 = 600
+// P11 = 650
+// P12 = 700
 
-void calculaPertinenciaSensor(double valor, char sensor, double P1, double P2, double P3, double P4, double P5, double P6, double P7, double P8) {
-    if(sensor == 'E') {
+void calculaPertinenciaSensor(double valor, char sensor,
+                              double P1, double P2, double P3, double P4,
+                              double P5, double P6, double P7, double P8,
+                              double P9, double P10, double P11, double P12) {
+    if(sensor == 'E') { // Sensor 1
         if(valor < P1) {
-            ptSens.sE = 1.0;
+            ptSens.s1 = 1.0;
         } else if(valor >= P1 && valor < P3) {
-            ptSens.sE = (P3 - valor) / (P3 - P1);
+            ptSens.s1 = (P3 - valor) / (P3 - P1);
         } else {
-            ptSens.sE = 0.0;
+            ptSens.s1 = 0.0;
         }
-    } else if(sensor == 'C') {
+    } else if(sensor == 'C') { // Sensor 2
         if(valor < P2) {
-            ptSens.sC = 0.0;
+            ptSens.s2 = 0.0;
         } else if(valor >= P2 && valor < P4) {
-            ptSens.sC = (valor - P2) / (P4 - P2);
+            ptSens.s2 = (valor - P2) / (P4 - P2);
         } else if(valor >= P4 && valor < P5) {
-            ptSens.sC = 1.0;
+            ptSens.s2 = 1.0;
         } else if(valor >= P5 && valor < P7) {
-            ptSens.sC = (P7 - valor) / (P7 - P5);
+            ptSens.s2 = (P7 - valor) / (P7 - P5);
         } else {
-            ptSens.sC = 0.0;
+            ptSens.s2 = 0.0;
         }
-    } else if(sensor == 'D') {
+    } else if(sensor == 'D') { // Sensor 3
         if(valor < P6) {
-            ptSens.sD = 0.0;
+            ptSens.s3 = 0.0;
         } else if(valor >= P6 && valor < P8) {
-            ptSens.sD = (valor - P6) / (P8 - P6);
+            ptSens.s3 = (valor - P6) / (P8 - P6);
         } else {
-            ptSens.sD = 1.0;
+            ptSens.s3 = 1.0;
+        }
+        // Logo após o cálculo de pertinência para o sensor 'D', calculamos a média com o sensor 'C' (s2)
+        ptSens.s2 = (ptSens.s2 + ptSens.s3) / 2.0; // Média entre s2 e s3
+    } else if(sensor == 'F') { // Sensor 4
+        if(valor < P9) {
+            ptSens.s4 = 0.0;
+        } else if(valor >= P9 && valor < P10) {
+            ptSens.s4 = (valor - P9) / (P10 - P9);
+        } else if(valor >= P10 && valor < P11) {
+            ptSens.s4 = 1.0;
+        } else if(valor >= P11 && valor < P12) {
+            ptSens.s4 = (P12 - valor) / (P12 - P11);
+        } else {
+            ptSens.s4 = 0.0;
         }
     }
 }
@@ -153,142 +175,142 @@ void calculaPertinenciaMotor(double valor, double P1, double P2, double P3, doub
 }
 
 void avaliaFuzzy() {
-    // Resetando a saída fuzzy para todas as direções
+    // Reset na saída fuzzy para todas as direções
     ptSai.levEsq = ptSai.Esq = ptSai.Frente = ptSai.levDir = ptSai.Dir = 0.0;
 
     // Regra 1: PPP
-    if (ptSens.sC > 0.8) {
+    if (ptSens.s2 > 0.8) {
         ptSai.Frente = 1.0; // Siga em frente
     }
 
     // Regra 2: PPB
-    if (ptSens.sE > 0.8) {
+    if (ptSens.s1 > 0.8) {
         ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
     }
 
     // Regra 3: PPC
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
     }
 
     // Regra 4: PBP
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
     }
 
     // Regra 5: PBB
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
     }
 
     // Regra 6: PBC
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.Esq = 0.5; // Ajuste para a esquerda
     }
 
     // Regra 7: PCP
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.Esq = 0.5; // Ajuste para a esquerda
     }
 
     // Regra 8: PCB
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.Esq = 0.5; // Ajuste para a esquerda
     }
 
     // Regra 9: PCC
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
     }
 
     // Regra 10: BPP
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.levDir = 0.5; // Ajuste leve para a direita
     }
 
     // Regra 11: BPB
-    if (ptSens.sC > 0.8) {
+    if (ptSens.s2 > 0.8) {
         ptSai.Frente = 1.0; // Siga em frente
     }
 
     // Regra 12: BPC
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.levDir = 0.5; // Ajuste leve para a direita
     }
 
     // Regra 13: BBP
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.Dir = 0.5; // Ajuste para a Direita
     }
 
     // Regra 14: BCP
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.levDir = 0.5; // Ajuste leve para a direita
     }
 
     // Regra 15: CPP
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.levDir = 0.5; // Ajuste leve para a direita
     }
 
     // Regra 16: CPC
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.levDir = 0.5; // Ajuste leve para a direita
     }
 
     // Regra 17: CBP
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.levDir = 0.5; // Ajuste leve para a direita
     }
 
     // Regra 18: CPB
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
     }
 
     // Regra 19: BBB
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.Dir = 0.5; // Ajuste para a Direita
     }
 
     // Regra 20: BBC
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.Dir = 0.5; // Ajuste para a Direita
     }
 
     // Regra 21: BCB
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.Dir = 0.5; // Ajuste para a Direita
     }
 
     // Regra 22: BCC
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.Dir = 0.5; // Ajuste para a Direita
     }
 
     // Regra 23: CCP
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.Dir = 0.5; // Ajuste para a Direita
     }
 
     // Regra 24: CBB
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.Esq = 0.5; // Ajuste para a esquerda
     }
 
     // Regra 25: CBC
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.Esq = 0.5; // Ajuste para a esquerda
     }
 
     // Regra 26: CCB
-    if (ptSens.sD > 0.8) {
+    if (ptSens.s3 > 0.8) {
         ptSai.Esq = 0.5; // Ajuste para a esquerda
     }
 
     // Regra 27: CCC
-    if (ptSens.sD > 0.8) {
-        ptSai.Esq = 0.7; // Ajuste para a esquerda
+    if (ptSens.s3 > 0.8) {
+        ptSai.Esq = 0.7; // Ajuste mais intenso para a esquerda
     }
 
 }
@@ -340,7 +362,35 @@ void calculaSaida() {
 
 
 int main() {
+    double s1 = 0, s2 = 0, s3 = 0, s4 = 0;
+    char E = 0, C = 0, D = 0, F = 0;
+    printf("Digite o valor verificado pelo sensor 1\n");
+    scanf("%lf" ,&s1);
+    printf("Digite o valor verificado pelo sensor 2\n");
+    scanf("%lf" ,&s2);
+    printf("Digite o valor verificado pelo sensor 3\n");
+    scanf("%lf" ,&s3);
+    printf("Digite o valor verificado pelo sensor 4\n");
+    scanf("%lf" ,&s4);
+    printf("Valores digitados:%lf\t%lf\t%lf\t%lf\n", s1, s2, s3, s4);
 
+    calculaPertinenciaSensor(s1,E,150.0,200.0,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0,650.0,700.0);
+    calculaPertinenciaSensor(s2,C,150.0,200.0,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0,650.0,700.0);
+    calculaPertinenciaSensor(s3,D,150.0,200.0,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0,650.0,700.0);
+    calculaPertinenciaSensor(s4,F,150.0,200.0,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0,650.0,700.0);
+    calculaPertinenciaMotor(5.0,0.0,0.0,50.0,50.0,100.0,100.0);
+
+    avaliaFuzzy();
+    printf("\r\n");
+    printf("ptSai.levEsq = %lf\n", ptSai.levEsq);
+    printf("ptSai.Esq = %lf\n", ptSai.Esq);
+    printf("ptSai.Frente = %lf\n", ptSai.Frente);
+    printf("ptSai.levDir = %lf\n", ptSai.levDir);
+    printf("ptSai.Dir = %lf\n", ptSai.Dir);
+
+    calculaSaida();
+    printf("\r\n");
+    printf("Saida = %lf", saida);
 }
 
 
