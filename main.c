@@ -662,9 +662,9 @@ void calculaSaida() {
 
 
 int main() {
-    double esq = 1000.0;
-    double centro = 500.0;
-    double dir = 0;
+    double esq = 150.0;
+    double centro = 200.0;
+    double dir = 400.0;
 
     calculaPertinenciaSensorEsquerdo(esq,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0);
     calculaPertinenciaSensorCentro(centro,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0);
