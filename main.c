@@ -10,6 +10,21 @@
  *
  */
 
+const int analogInPin1 = A0; //Direita
+const int analogInPin2 = A1;
+const int analogInPin3 = A2;
+const int analogInPin4 = A3; //Esquerda
+int sensorValue1 = 0;
+int sensorValue2 = 0;
+int sensorValue3 = 0;
+int sensorValue4 = 0;
+int sensorValueMed = 0; // Var para armazenar média dos sensores 2 e 3
+
+// Var dos motores
+const int motor1a = 5; // Motor direita
+const int motor1b = 6;
+const int motor2a = 9; // Motor esquerda
+const int motor2b = 10;
 
 struct pertCor{ // Struct de definição das cores captadas pelos sensores
     double Branco;
@@ -660,8 +675,65 @@ void calculaSaida() {
     saida = num / den;
 }
 
+void setup() { // Setup da pinagem dos motores
+    pinMode(motor1a, OUTPUT); // Definição do OutPut para os motores
+    pinMode(motor1b, OUTPUT);
+    pinMode(motor2a, OUTPUT);
+    pinMode(motor2b, OUTPUT);
+    digitalWrite(motor1a, LOW); // Ajuste dos motores
+    digitalWrite(motor2a, LOW);
+}
+
+void loop() {
+    sensorValue1 = analogRead(analogInPin1); // Leitura dos valores disponibilizados pelos sensores
+    sensorValue2 = analogRead(analogInPin2);
+    sensorValue3 = analogRead(analogInPin3);
+    sensorValue4 = analogRead(analogInPin4);
+
+    sensorValueMed=((sensorValue2+sensorValue3)/2)+50; // Cálculo da média dos valores dos sensores centrais do robô
+
+    calculaPertinenciaSensorEsquerdo(sensorValue4,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0);
+    calculaPertinenciaSensorCentro(sensorValueMed,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0);
+    calculaPertinenciaSensorDireita(sensorValue1,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0);
+
+    avaliaFuzzy();
+    calculaSaida();
+
+    /*
+     * Esquerda -> Motor E: 0 Motor D: 255 - Faixa: 0-20
+     * Levemente Esquerda -> Motor E: 128 Motor D: 255 - Faixa: 21-40
+     * Frente -> Motor E: 255 Motor D: 255 - Faixa: 41-55
+     * Levemente Direita -> Motor E: 255 Motor D: 128 - Faixa: 55-80
+     * Direita -> Motor E: 255 Motor D: 0 - Faixa: 81-100
+     */
+    if(saida<21){ // Write dos motores
+        analogWrite(motor1b, 0);
+        analogWrite(motor2b, 255);
+    }
+
+    if(saida>20 && saida<40){
+        analogWrite(motor1b, 50);
+        analogWrite(motor2b, 255);
+    }
+
+    if(saida>=41 && saida<55){
+        analogWrite(motor1b, 255);
+        analogWrite(motor2b, 255); ;
+    }
+
+    if(saida>=55 && saida<80){
+        analogWrite(motor1b, 255);
+        analogWrite(motor2b, 50);
+    }
+
+    if(saida>=81){
+        analogWrite(motor1b, 255);
+        analogWrite(motor2b, 0);
+    }
+}
 
 int main() {
+    /*
     double esq = 150.0;
     double centro = 200.0;
     double dir = 400.0;
@@ -746,6 +818,7 @@ int main() {
     calculaSaida();
     printf("\r\n");
     printf("Saida = %lf\r\n", saida);
+     */
 }
 
 
