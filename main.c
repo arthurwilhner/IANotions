@@ -1,27 +1,25 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-// Começar em 150 o branco, o sensor não capta menos que isso
+/*
+ * T(X1) = {Branco, Cinza e Preto}
+ * T(X2) = {Branco, Cinza e Preto}
+ * T(X3) = {Branco, Cinza e Preto}
+ *
+ * T(Y) = {levEsq - levemente Esquerda, Esq - Esquerda, Frente - Frente, levDir - Levemente a Direita e Dir - Direita}
+ *
+ */
 
-struct pertSens{ // Pertinencia
-    double s1;
-    double s2;
-    double s3;
-    double s4;
+
+struct pertCor{ // Struct de definição das cores captadas pelos sensores
+    double Branco;
+    double Cinza;
+    double Preto;
 };
 
-struct pertSens ptSens;
-
-struct pertVeloMot{
-    double mML; // Velocidade Muito Lenta
-    double mL; // Velocidade Lenta
-    double mM; // Velocidade Média
-    double mLR; // Velocidade Levemente Rápida
-    double mR; // Velocidade Rápida
-    double mMR; // Velocidade Muito Rápido
-};
-
-struct pertVeloMot ptVel;
+struct pertCor pertcorEsq;
+struct pertCor pertcorCent;
+struct pertCor pertcorDir;
 
 struct pertSaida{
     double levEsq; // Levemente esquerda
@@ -39,7 +37,7 @@ struct regra{
     double A1;
     double A2;
     double A3;
-    double A4;
+    double S1; // Saída
 };
 
 struct regra R1;
@@ -75,242 +73,544 @@ struct regra R27;
 // Conjuntos Fuzzy
 //
 // Branco          Cinza             Preto
-//1|****           -----             xxxx|
+// 1|****           ----             xxxx|
 // |   . *        - .  . -         x .   |
 // |   .   *    -   .  .   -     x   .   |
 // |   .     *-     .  .     - x     .   |
 // |   .    -  *    .  .     x -     .   |
-//0|___.__-______*__.__.___x_____-___.___|
+// |___.__-______*__.__.___x_____-___.___|
 // 0  P1 P2     P3 P4  P5 P6    P7  P8   1
-// P1 = 175
-// P2 = 200
-// P3 = 250
-// P4 = 300
-// P5 = 350
-// P6 = 400
-// P7 = 450
-// P8 = 500
-// P9 = 550
-// P10 = 600
-// P11 = 650
-// P12 = 700
 
-void calculaPertinenciaSensor(double valor, char sensor,
+/*
+P1  200
+P2  300
+P3  400
+P4  500
+P5  550
+P6  600
+P7  650
+P8  700
+*/
+
+void calculaPertinenciaSensorEsquerdo(double valor,
                               double P1, double P2, double P3, double P4,
-                              double P5, double P6, double P7, double P8,
-                              double P9, double P10, double P11, double P12) {
-    if(sensor == 'E') { // Sensor 1
-        if(valor < P1) {
-            ptSens.s1 = 1.0;
-        } else if(valor >= P1 && valor < P3) {
-            ptSens.s1 = (P3 - valor) / (P3 - P1);
-        } else {
-            ptSens.s1 = 0.0;
-        }
-    } else if(sensor == 'C') { // Sensor 2
-        if(valor < P2) {
-            ptSens.s2 = 0.0;
-        } else if(valor >= P2 && valor < P4) {
-            ptSens.s2 = (valor - P2) / (P4 - P2);
-        } else if(valor >= P4 && valor < P5) {
-            ptSens.s2 = 1.0;
-        } else if(valor >= P5 && valor < P7) {
-            ptSens.s2 = (P7 - valor) / (P7 - P5);
-        } else {
-            ptSens.s2 = 0.0;
-        }
-    } else if(sensor == 'D') { // Sensor 3
-        if(valor < P6) {
-            ptSens.s3 = 0.0;
-        } else if(valor >= P6 && valor < P8) {
-            ptSens.s3 = (valor - P6) / (P8 - P6);
-        } else {
-            ptSens.s3 = 1.0;
-        }
-        // Logo após o cálculo de pertinência para o sensor 'D', calculamos a média com o sensor 'C' (s2)
-        ptSens.s2 = (ptSens.s2 + ptSens.s3) / 2.0; // Média entre s2 e s3
-    } else if(sensor == 'F') { // Sensor 4
-        if(valor < P9) {
-            ptSens.s4 = 0.0;
-        } else if(valor >= P9 && valor < P10) {
-            ptSens.s4 = (valor - P9) / (P10 - P9);
-        } else if(valor >= P10 && valor < P11) {
-            ptSens.s4 = 1.0;
-        } else if(valor >= P11 && valor < P12) {
-            ptSens.s4 = (P12 - valor) / (P12 - P11);
-        } else {
-            ptSens.s4 = 0.0;
-        }
+                              double P5, double P6, double P7, double P8){ // Calculo da pertinência de cada cor para o Sensor Esquerdo
+    // Branco
+    if(valor<P1){
+        pertcorEsq.Branco = 1.0;
+    }
+    if(valor>=P1 && valor<P3){
+        pertcorEsq.Branco = (P3-valor)/(P3-P1);
+    }
+    if(valor>=P3){
+        pertcorEsq.Branco = 0.0;
+    }
+    // Cinza
+    if(valor<P2){
+        pertcorEsq.Cinza = 0.0;
+    }
+    if(valor>=P2 && valor <P4){
+        pertcorEsq.Cinza = (valor-P2)/(P4-P2);
+    }
+    if(valor>=P4 && valor<P5){
+        pertcorEsq.Cinza = 1.0;
+    }
+    if(valor >= P5 && valor<P7){
+        pertcorEsq.Cinza = (P7-valor)/(P7-P5);
+    }
+    if(valor>=P7){
+        pertcorEsq.Cinza = 0.0;
+    }
+    // Preto
+    if(valor<P6){
+        pertcorEsq.Preto = 0.0;
+    }
+    if(valor>=P6 && valor<P8){
+        pertcorEsq.Preto = 1.0;
     }
 }
 
-void calculaPertinenciaMotor(double valor, double P1, double P2, double P3, double P4, double P5, double P6) {
-    // Reset valores de pertinência
-    ptVel.mML = ptVel.mL = ptVel.mM = ptVel.mLR = ptVel.mR = ptVel.mMR = 0.0;
-
-    // Muito Lenta [0, P1]
-    if (valor <= P1) {
-        ptVel.mML = 1.0;
+void calculaPertinenciaSensorCentro(double valor,
+                                      double P1, double P2, double P3, double P4,
+                                      double P5, double P6, double P7, double P8){ // Calculo da pertinência de cada cor para o Sensor do Centro
+    // Branco
+    if(valor<P1){
+        pertcorCent.Branco = 1.0;
     }
-
-    // Lenta [P1, P2]
-    if (valor > P1 && valor < P2) {
-        ptVel.mL = (valor - P1) / (P2 - P1);
-    } else if (valor >= P2 && valor <= P3) {
-        ptVel.mL = (P3 - valor) / (P3 - P2);
+    if(valor>=P1 && valor<P3){
+        pertcorCent.Branco = (P3-valor)/(P3-P1);
     }
-
-    // Média [P2, P4]
-    if (valor > P2 && valor < P4) {
-        ptVel.mM = (valor - P2) / (P4 - P2);
-    } else if (valor >= P4 && valor <= P5) {
-        ptVel.mM = (P5 - valor) / (P5 - P4);
+    if(valor>=P3){
+        pertcorCent.Branco = 0.0;
     }
-
-    // Levemente Rápida [P4, P6]
-    if (valor > P4 && valor < P6) {
-        ptVel.mLR = (valor - P4) / (P6 - P4);
+    // Cinza
+    if(valor<P2){
+        pertcorCent.Cinza = 0.0;
     }
-
+    if(valor>=P2 && valor <P4){
+        pertcorCent.Cinza = (valor-P2)/(P4-P2);
+    }
+    if(valor>=P4 && valor<P5){
+        pertcorCent.Cinza = 1.0;
+    }
+    if(valor >= P5 && valor<P7){
+        pertcorCent.Cinza = (P7-valor)/(P7-P5);
+    }
+    if(valor>=P7){
+        pertcorCent.Cinza = 0.0;
+    }
+    // Preto
+    if(valor<P6){
+        pertcorCent.Preto = 0.0;
+    }
+    if(valor>=P6 && valor<P8){
+        pertcorCent.Preto = 1.0;
+    }
 }
+
+void calculaPertinenciaSensorDireita(double valor,
+                                    double P1, double P2, double P3, double P4,
+                                    double P5, double P6, double P7, double P8){ // Calculo da pertinência de cada cor para o Sensor da Direita
+    // Branco
+    if(valor<P1){
+        pertcorDir.Branco = 1.0;
+    }
+    if(valor>=P1 && valor<P3){
+        pertcorDir.Branco = (P3-valor)/(P3-P1);
+    }
+    if(valor>=P3){
+        pertcorDir.Branco = 0.0;
+    }
+    // Cinza
+    if(valor<P2){
+        pertcorDir.Cinza = 0.0;
+    }
+    if(valor>=P2 && valor <P4){
+        pertcorDir.Cinza = (valor-P2)/(P4-P2);
+    }
+    if(valor>=P4 && valor<P5){
+        pertcorDir.Cinza = 1.0;
+    }
+    if(valor >= P5 && valor<P7){
+        pertcorDir.Cinza = (P7-valor)/(P7-P5);
+    }
+    if(valor>=P7){
+        pertcorDir.Cinza = 0.0;
+    }
+    // Preto
+    if(valor<P6){
+        pertcorDir.Preto = 0.0;
+    }
+    if(valor>=P6 && valor<P8){
+        pertcorDir.Preto = 1.0;
+    }
+}
+
 
 void avaliaFuzzy() {
-    // Reset na saída fuzzy para todas as direções
-    ptSai.levEsq = ptSai.Esq = ptSai.Frente = ptSai.levDir = ptSai.Dir = 0.0;
-
-    // Regra 1: PPP
-    if (ptSens.s2 > 0.8) {
-        ptSai.Frente = 1.0; // Siga em frente
+    // Regra 1: PPP -> Reto
+    R1.A1 = pertcorEsq.Preto;
+    R1.A2 = pertcorCent.Preto;
+    R1.A3 = pertcorDir.Preto;
+        R1.S1 = R1.A1;
+    if(R1.A2 < R1.A1 && R1.A2 < R1.A3){
+        R1.S1 = R1.A2;
+    }
+    if(R1.A3 < R1.A1 && R1.A3 < R1.A2){
+        R1.S1 = R1.A3;
     }
 
-    // Regra 2: PPB
-    if (ptSens.s1 > 0.8) {
-        ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
+    // Regra 2: PPB -> Levemente a Esquerda
+    R2.A1 = pertcorEsq.Preto;
+    R2.A2 = pertcorCent.Preto;
+    R2.A3 = pertcorDir.Branco;
+        R2.S1 = R2.A1;
+    if(R2.A2 < R2.A1 && R2.A2 <R2.A3){
+        R2.S1 = R2.A2;
+    }
+    if(R2.A3 < R2.A1 != 0){
+        R2.S1 = R2.A3;
     }
 
-    // Regra 3: PPC
-    if (ptSens.s3 > 0.8) {
-        ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
+    // Regra 3: PPC -> Levemente a Esquerda
+    R3.A1 = pertcorEsq.Preto;
+    R3.A2 = pertcorCent.Preto;
+    R3.A3 = pertcorDir.Cinza;
+        R3.S1 = R3.A1;
+    if(R3.A2 < R3.A1 && R3.A2 <R3.A3){
+        R3.S1 = R3.A2;
+    }
+    if(R3.A3 < R3.A1 != 0){
+        R3.S1 = R3.A3;
     }
 
-    // Regra 4: PBP
-    if (ptSens.s3 > 0.8) {
-        ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
+    // Regra 4: PBP -> Esquerda
+    R4.A1 = pertcorEsq.Preto;
+    R4.A2 = pertcorCent.Branco;
+    R4.A3 = pertcorDir.Preto;
+        R4.S1 = R4.A1;
+    if(R4.A2 < R4.A1 && R4.A2 <R4.A3){
+        R4.S1 = R4.A2;
+    }
+    if(R4.A3 < R4.A1 != 0){
+        R4.S1 = R4.A3;
     }
 
-    // Regra 5: PBB
-    if (ptSens.s3 > 0.8) {
-        ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
+    // Regra 5: PBB -> Levemente a Esquerda
+    R5.A1 = pertcorEsq.Preto;
+    R5.A2 = pertcorCent.Branco;
+    R5.A3 = pertcorDir.Branco;
+        R5.S1 = R5.A1;
+    if(R5.A2 < R5.A1 && R5.A2 <R5.A3){
+        R5.S1 = R5.A2;
+    }
+    if(R5.A3 < R5.A1 != 0){
+        R5.S1 = R5.A3;
     }
 
-    // Regra 6: PBC
-    if (ptSens.s3 > 0.8) {
-        ptSai.Esq = 0.5; // Ajuste para a esquerda
+    // Regra 6: PBC -> Esquerda
+    R6.A1 = pertcorEsq.Preto;
+    R6.A2 = pertcorCent.Branco;
+    R6.A3 = pertcorDir.Cinza;
+        R6.S1 = R6.A1;
+    if(R6.A2 < R6.A1 && R6.A2 <R6.A3){
+        R6.S1 = R6.A2;
+    }
+    if(R6.A3 < R6.A1 != 0){
+        R6.S1 = R6.A3;
     }
 
-    // Regra 7: PCP
-    if (ptSens.s3 > 0.8) {
-        ptSai.Esq = 0.5; // Ajuste para a esquerda
+    // Regra 7: PCP -> Direita
+    R7.A1 = pertcorEsq.Preto;
+    R7.A2 = pertcorCent.Cinza;
+    R7.A3 = pertcorDir.Preto;
+        R7.S1 = R6.A1;
+    if(R7.A2 < R7.A1 && R7.A2 <R7.A3){
+        R7.S1 = R7.A2;
+    }
+    if(R7.A3 < R7.A1 != 0){
+        R7.S1 = R7.A3;
     }
 
-    // Regra 8: PCB
-    if (ptSens.s3 > 0.8) {
-        ptSai.Esq = 0.5; // Ajuste para a esquerda
+    // Regra 8: PCB -> Esquerda
+    R8.A1 = pertcorEsq.Preto;
+    R8.A2 = pertcorCent.Cinza;
+    R8.A3 = pertcorDir.Branco;
+    R8.S1 = R8.A1;
+    if(R8.A2 < R8.A1 && R8.A2 < R8.A3){
+        R8.S1 = R8.A2;
+    }
+    if(R8.A3 < R8.A1 != 0){
+        R8.S1 = R8.A3;
     }
 
-    // Regra 9: PCC
-    if (ptSens.s3 > 0.8) {
-        ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
+// Regra 9: PCC -> Levemente a Esquerda
+    R9.A1 = pertcorEsq.Preto;
+    R9.A2 = pertcorCent.Cinza;
+    R9.A3 = pertcorDir.Cinza;
+    R9.S1 = R9.A1;
+    if(R9.A2 < R9.A1 && R9.A2 < R9.A3){
+        R9.S1 = R9.A2;
+    }
+    if(R9.A3 < R9.A1 != 0){
+        R9.S1 = R9.A3;
     }
 
-    // Regra 10: BPP
-    if (ptSens.s3 > 0.8) {
-        ptSai.levDir = 0.5; // Ajuste leve para a direita
+// Regra 10: BPP -> Levemente a Direita
+    R10.A1 = pertcorEsq.Branco;
+    R10.A2 = pertcorCent.Preto;
+    R10.A3 = pertcorDir.Preto;
+    R10.S1 = R10.A1;
+    if(R10.A2 < R10.A1 && R10.A2 < R10.A3){
+        R10.S1 = R10.A2;
+    }
+    if(R10.A3 < R10.A1 != 0){
+        R10.S1 = R10.A3;
     }
 
-    // Regra 11: BPB
-    if (ptSens.s2 > 0.8) {
-        ptSai.Frente = 1.0; // Siga em frente
+// Regra 11: BPB -> Em Frente
+    R11.A1 = pertcorEsq.Branco;
+    R11.A2 = pertcorCent.Preto;
+    R11.A3 = pertcorDir.Branco;
+    R11.S1 = R11.A1;
+    if(R11.A2 < R11.A1 && R11.A2 < R11.A3){
+        R11.S1 = R11.A2;
+    }
+    if(R11.A3 < R11.A1 != 0){
+        R11.S1 = R11.A3;
     }
 
-    // Regra 12: BPC
-    if (ptSens.s3 > 0.8) {
-        ptSai.levDir = 0.5; // Ajuste leve para a direita
+// Regra 12: BPC -> Levemente a Direita
+    R12.A1 = pertcorEsq.Branco;
+    R12.A2 = pertcorCent.Preto;
+    R12.A3 = pertcorDir.Cinza;
+    R12.S1 = R12.A1;
+    if(R12.A2 < R12.A1 && R12.A2 < R12.A3){
+        R12.S1 = R12.A2;
+    }
+    if(R12.A3 < R12.A1 != 0){
+        R12.S1 = R12.A3;
     }
 
-    // Regra 13: BBP
-    if (ptSens.s3 > 0.8) {
-        ptSai.Dir = 0.5; // Ajuste para a Direita
+// Regra 13: BBP -> Levemente a Direita
+    R13.A1 = pertcorEsq.Branco;
+    R13.A2 = pertcorCent.Branco;
+    R13.A3 = pertcorDir.Preto;
+    R13.S1 = R13.A1;
+    if(R13.A2 < R13.A1 && R13.A2 < R13.A3){
+        R13.S1 = R13.A2;
+    }
+    if(R13.A3 < R13.A1 != 0){
+        R13.S1 = R13.A3;
     }
 
-    // Regra 14: BCP
-    if (ptSens.s3 > 0.8) {
-        ptSai.levDir = 0.5; // Ajuste leve para a direita
+// Regra 14: BCP -> Levemente a Direita
+    R14.A1 = pertcorEsq.Branco;
+    R14.A2 = pertcorCent.Cinza;
+    R14.A3 = pertcorDir.Preto;
+    R14.S1 = R14.A1;
+    if(R14.A2 < R14.A1 && R14.A2 < R14.A3){
+        R14.S1 = R14.A2;
+    }
+    if(R14.A3 < R14.A1 != 0){
+        R14.S1 = R14.A3;
     }
 
-    // Regra 15: CPP
-    if (ptSens.s3 > 0.8) {
-        ptSai.levDir = 0.5; // Ajuste leve para a direita
+// Regra 15: CPP -> Direita
+    R15.A1 = pertcorEsq.Cinza;
+    R15.A2 = pertcorCent.Preto;
+    R15.A3 = pertcorDir.Preto;
+    R15.S1 = R15.A1;
+    if(R15.A2 < R15.A1 && R15.A2 < R15.A3){
+        R15.S1 = R15.A2;
+    }
+    if(R15.A3 < R15.A1 != 0){
+        R15.S1 = R15.A3;
     }
 
-    // Regra 16: CPC
-    if (ptSens.s3 > 0.8) {
-        ptSai.levDir = 0.5; // Ajuste leve para a direita
+// Regra 16: CPC -> Levemente a Direita
+    R16.A1 = pertcorEsq.Cinza;
+    R16.A2 = pertcorCent.Preto;
+    R16.A3 = pertcorDir.Cinza;
+    R16.S1 = R16.A1;
+    if(R16.A2 < R16.A1 && R16.A2 < R16.A3){
+        R16.S1 = R16.A2;
+    }
+    if(R16.A3 < R16.A1 != 0){
+        R16.S1 = R16.A3;
     }
 
-    // Regra 17: CBP
-    if (ptSens.s3 > 0.8) {
-        ptSai.levDir = 0.5; // Ajuste leve para a direita
+// Regra 17: CBP -> Levemente a Direita
+    R17.A1 = pertcorEsq.Cinza;
+    R17.A2 = pertcorCent.Branco;
+    R17.A3 = pertcorDir.Preto;
+    R17.S1 = R17.A1;
+    if(R17.A2 < R17.A1 && R17.A2 < R17.A3){
+        R17.S1 = R17.A2;
+    }
+    if(R17.A3 < R17.A1 != 0){
+        R17.S1 = R17.A3;
     }
 
-    // Regra 18: CPB
-    if (ptSens.s3 > 0.8) {
-        ptSai.levEsq = 0.5; // Ajuste leve para a esquerda
+// Regra 18: CPB -> Levemente a Esquerda
+    R18.A1 = pertcorEsq.Cinza;
+    R18.A2 = pertcorCent.Preto;
+    R18.A3 = pertcorDir.Branco;
+    R18.S1 = R18.A1;
+    if(R18.A2 < R18.A1 && R18.A2 < R18.A3){
+        R18.S1 = R18.A2;
+    }
+    if(R18.A3 < R18.A1 != 0){
+        R18.S1 = R18.A3;
     }
 
-    // Regra 19: BBB
-    if (ptSens.s3 > 0.8) {
-        ptSai.Dir = 0.5; // Ajuste para a Direita
+// Regra 19: BBB -> Direita
+    R19.A1 = pertcorEsq.Branco;
+    R19.A2 = pertcorCent.Branco;
+    R19.A3 = pertcorDir.Branco;
+    R19.S1 = R19.A1;
+    if(R19.A2 < R19.A1 && R19.A2 < R19.A3){
+        R19.S1 = R19.A2;
+    }
+    if(R19.A3 < R19.A1 != 0){
+        R19.S1 = R19.A3;
     }
 
-    // Regra 20: BBC
-    if (ptSens.s3 > 0.8) {
-        ptSai.Dir = 0.5; // Ajuste para a Direita
+    // Regra 20: BBC -> Direita
+    R20.A1 = pertcorEsq.Branco;
+    R20.A2 = pertcorCent.Branco;
+    R20.A3 = pertcorDir.Cinza;
+    R20.S1 = R20.A1;
+    if(R20.A2 < R20.A1 && R20.A2 < R20.A3){
+        R20.S1 = R20.A2;
+    }
+    if(R20.A3 < R20.A1 != 0){
+        R20.S1 = R20.A3;
     }
 
-    // Regra 21: BCB
-    if (ptSens.s3 > 0.8) {
-        ptSai.Dir = 0.5; // Ajuste para a Direita
+// Regra 21: BCB -> Direita
+    R21.A1 = pertcorEsq.Branco;
+    R21.A2 = pertcorCent.Cinza;
+    R21.A3 = pertcorDir.Branco;
+    R21.S1 = R21.A1;
+    if(R21.A2 < R21.A1 && R21.A2 < R21.A3){
+        R21.S1 = R21.A2;
+    }
+    if(R21.A3 < R21.A1 != 0){
+        R21.S1 = R21.A3;
     }
 
-    // Regra 22: BCC
-    if (ptSens.s3 > 0.8) {
-        ptSai.Dir = 0.5; // Ajuste para a Direita
+// Regra 22: BCC -> Direita
+    R22.A1 = pertcorEsq.Branco;
+    R22.A2 = pertcorCent.Cinza;
+    R22.A3 = pertcorDir.Cinza;
+    R22.S1 = R22.A1;
+    if(R22.A2 < R22.A1 && R22.A2 < R22.A3){
+        R22.S1 = R22.A2;
+    }
+    if(R22.A3 < R22.A1 != 0){
+        R22.S1 = R22.A3;
     }
 
-    // Regra 23: CCP
-    if (ptSens.s3 > 0.8) {
-        ptSai.Dir = 0.5; // Ajuste para a Direita
+// Regra 23: CCP -> Esquerda
+    R23.A1 = pertcorEsq.Cinza;
+    R23.A2 = pertcorCent.Cinza;
+    R23.A3 = pertcorDir.Preto;
+    R23.S1 = R23.A1;
+    if(R23.A2 < R23.A1 && R23.A2 < R23.A3){
+        R23.S1 = R23.A2;
+    }
+    if(R23.A3 < R23.A1 != 0){
+        R23.S1 = R23.A3;
     }
 
-    // Regra 24: CBB
-    if (ptSens.s3 > 0.8) {
-        ptSai.Esq = 0.5; // Ajuste para a esquerda
+// Regra 24: CBB -> Esquerda
+    R24.A1 = pertcorEsq.Cinza;
+    R24.A2 = pertcorCent.Branco;
+    R24.A3 = pertcorDir.Branco;
+    R24.S1 = R24.A1;
+    if(R24.A2 < R24.A1 && R24.A2 < R24.A3){
+        R24.S1 = R24.A2;
+    }
+    if(R24.A3 < R24.A1 != 0){
+        R24.S1 = R24.A3;
     }
 
-    // Regra 25: CBC
-    if (ptSens.s3 > 0.8) {
-        ptSai.Esq = 0.5; // Ajuste para a esquerda
+// Regra 25: CBC -> Esquerda
+    R25.A1 = pertcorEsq.Cinza;
+    R25.A2 = pertcorCent.Branco;
+    R25.A3 = pertcorDir.Cinza;
+    R25.S1 = R25.A1;
+    if(R25.A2 < R25.A1 && R25.A2 < R25.A3){
+        R25.S1 = R25.A2;
+    }
+    if(R25.A3 < R25.A1 != 0){
+        R25.S1 = R25.A3;
     }
 
-    // Regra 26: CCB
-    if (ptSens.s3 > 0.8) {
-        ptSai.Esq = 0.5; // Ajuste para a esquerda
+// Regra 26: CCB -> Esquerda
+    R26.A1 = pertcorEsq.Cinza;
+    R26.A2 = pertcorCent.Cinza;
+    R26.A3 = pertcorDir.Branco;
+    R26.S1 = R26.A1;
+    if(R26.A2 < R26.A1 && R26.A2 < R26.A3){
+        R26.S1 = R26.A2;
+    }
+    if(R26.A3 < R26.A1 != 0){
+        R26.S1 = R26.A3;
     }
 
-    // Regra 27: CCC
-    if (ptSens.s3 > 0.8) {
-        ptSai.Esq = 0.7; // Ajuste mais intenso para a esquerda
+// Regra 27: CCC -> Esquerda
+    R27.A1 = pertcorEsq.Cinza;
+    R27.A2 = pertcorCent.Cinza;
+    R27.A3 = pertcorDir.Cinza;
+    R27.S1 = R27.A1;
+    if(R27.A2 < R27.A1 && R27.A2 < R27.A3){
+        R27.S1 = R27.A2;
+    }
+    if(R27.A3 < R27.A1 != 0){
+        R27.S1 = R27.A3;
+    }
+
+    /*
+     * Levemente Esquerda -> 2,3,9,18
+     * Esquerda -> 4, 6, 8, 24, 25, 26, 23, 27
+     * Reto -> 1, 11
+     * Direita -> 7, 15, 19, 20, 21, 22
+     * Levemente Direita -> 10, 12, 13, 14, 16, 17
+     */
+
+    ptSai.levEsq = R2.S1; // Pertinência de saídas Levemente a Esquerda
+    if(ptSai.levEsq < R3.S1){
+        ptSai.levEsq = R3.S1;
+    }
+    if(ptSai.levEsq < R9.S1){
+        ptSai.levEsq = R9.S1;
+    }
+    if(ptSai.levEsq < R18.S1){
+        ptSai.levEsq = R18.S1;
+    }
+
+    ptSai.Esq = R4.S1; // Pertinência de saídas a Esquerda
+    if(ptSai.Esq <R6.S1){
+        ptSai.Esq = R6.S1;
+    }
+    if(ptSai.Esq <R8.S1){
+        ptSai.Esq = R8.S1;
+    }
+    if(ptSai.Esq <R24.S1){
+        ptSai.Esq = R24.S1;
+    }
+    if(ptSai.Esq <R25.S1){
+        ptSai.Esq = R25.S1;
+    }
+    if(ptSai.Esq <R26.S1){
+        ptSai.Esq = R26.S1;
+    }
+    if(ptSai.Esq <R23.S1){
+        ptSai.Esq = R23.S1;
+    }
+    if(ptSai.Esq <R27.S1){
+        ptSai.Esq = R27.S1;
+    }
+
+    ptSai.Frente = R1.S1; // Pertinência de saídas em Frente
+    if(ptSai.Frente < R11.S1){
+        ptSai.Esq = R11.S1;
+    }
+
+    ptSai.levDir = R10.S1; // Pertinência de saídas levemente a Direita
+    if(ptSai.levDir < R12.S1){
+        ptSai.levDir = R12.S1;
+    }
+    if(ptSai.levDir < R13.S1){
+        ptSai.levDir = R13.S1;
+    }
+    if(ptSai.levDir < R14.S1){
+        ptSai.levDir = R14.S1;
+    }
+    if(ptSai.levDir < R16.S1){
+        ptSai.levDir = R16.S1;
+    }
+    if(ptSai.levDir < R17.S1){
+        ptSai.levDir = R17.S1;
+    }
+
+    ptSai.Dir = R7.S1; // Pertinências de saída à Direita
+    if(ptSai.Dir < R15.S1){
+        ptSai.Dir = R15.S1;
+    }
+    if(ptSai.Dir < R19.S1){
+        ptSai.Dir = R19.S1;
+    }
+    if(ptSai.Dir < R20.S1){
+        ptSai.Dir = R20.S1;
+    }
+    if(ptSai.Dir < R21.S1){
+        ptSai.Dir = R21.S1;
+    }
+    if(ptSai.Dir < R22.S1){
+        ptSai.Dir = R22.S1;
     }
 
 }
@@ -323,38 +623,38 @@ void calculaSaida() {
     double valorLevDir;
     double valorDir;
 
-    double num = 0;
-    double den = 0;
+    double num = 0.0;
+    double den = 0.0;
 
-    valorLevEsq = (0+50)/2;
-    valorEsq = (50+100)/2;
-    valorFrente = (100+150)/2;
-    valorLevDir = (150+200)/2;
-    valorDir = (200+250)/2;
+    valorLevEsq = (0.0+25.0)/2;
+    valorEsq = (25.0+45.0)/2;
+    valorFrente = (45.0+55.0)/2;
+    valorLevDir = (55.0+75.0)/2;
+    valorDir = (75.0+100.0)/2;
 
-    if(ptSai.Esq){
-        num += valorEsq*ptSai.Esq;
-        den += ptSai.Esq;
+    if(ptSai.Esq > 0){
+        num = num + valorEsq * ptSai.Esq;
+        den = den + ptSai.Esq;
     }
 
-    if(ptSai.levEsq){
-        num += valorLevEsq*ptSai.levEsq;
-        den += ptSai.levEsq;
+    if(ptSai.levEsq > 0){
+        num = num + valorLevEsq*ptSai.levEsq;
+        den = den + ptSai.levEsq;
     }
 
-    if(ptSai.Frente){
-        num += valorFrente*ptSai.Frente;
-        den += ptSai.Frente;
+    if(ptSai.Frente > 0){
+        num = num + valorFrente*ptSai.Frente;
+        den = den + ptSai.Frente;
     }
 
-    if(ptSai.Dir){
-        num += valorDir*ptSai.Dir;
-        den += ptSai.Dir;
+    if(ptSai.Dir > 0){
+        num = num + valorDir*ptSai.Dir;
+        den = den + ptSai.Dir;
     }
 
-    if(ptSai.levDir){
-        num += valorLevDir*ptSai.levDir;
-        den += ptSai.levDir;
+    if(ptSai.levDir > 0){
+        num = num + valorLevDir*ptSai.levDir;
+        den = den + ptSai.levDir;
     }
 
     saida = num / den;
@@ -362,35 +662,90 @@ void calculaSaida() {
 
 
 int main() {
-    double s1 = 0, s2 = 0, s3 = 0, s4 = 0;
-    char E = 0, C = 0, D = 0, F = 0;
-    printf("Digite o valor verificado pelo sensor 1\n");
-    scanf("%lf" ,&s1);
-    printf("Digite o valor verificado pelo sensor 2\n");
-    scanf("%lf" ,&s2);
-    printf("Digite o valor verificado pelo sensor 3\n");
-    scanf("%lf" ,&s3);
-    printf("Digite o valor verificado pelo sensor 4\n");
-    scanf("%lf" ,&s4);
-    printf("Valores digitados:%lf\t%lf\t%lf\t%lf\n", s1, s2, s3, s4);
+    double esq = 1000.0;
+    double centro = 500.0;
+    double dir = 0;
 
-    calculaPertinenciaSensor(s1,E,150.0,200.0,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0,650.0,700.0);
-    calculaPertinenciaSensor(s2,C,150.0,200.0,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0,650.0,700.0);
-    calculaPertinenciaSensor(s3,D,150.0,200.0,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0,650.0,700.0);
-    calculaPertinenciaSensor(s4,F,150.0,200.0,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0,650.0,700.0);
-    calculaPertinenciaMotor(5.0,0.0,0.0,50.0,50.0,100.0,100.0);
+    calculaPertinenciaSensorEsquerdo(esq,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0);
+    calculaPertinenciaSensorCentro(centro,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0);
+    calculaPertinenciaSensorDireita(dir,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0);
 
+    printf("\r\n");
+    printf("PertCorEsq.Branco,PertCorEsq.Cinza,PertCorEsq.Preto = %lf %lf %lf\r\n",
+           pertcorEsq.Branco, pertcorEsq.Cinza, pertcorEsq.Preto);
+    printf(
+            "pertcorCent.Branco, pertcorCent.Cinza, pertcorCent.Preto = %lf %lf %lf\r\n",
+            pertcorCent.Branco, pertcorCent.Cinza, pertcorCent.Preto);
+    printf("pertcorDir.Branco, pertcorDir.Cinza, pertcorDir.Preto = %lf %lf %lf\r\n",
+           pertcorDir.Branco, pertcorDir.Cinza, pertcorDir.Preto);
+    // Avaliação das Regras
     avaliaFuzzy();
     printf("\r\n");
-    printf("ptSai.levEsq = %lf\n", ptSai.levEsq);
-    printf("ptSai.Esq = %lf\n", ptSai.Esq);
-    printf("ptSai.Frente = %lf\n", ptSai.Frente);
-    printf("ptSai.levDir = %lf\n", ptSai.levDir);
-    printf("ptSai.Dir = %lf\n", ptSai.Dir);
+    printf("R1.A1,R1.A2,R1.A3,R1.S1 = %lf %lf %lf %lf\r\n", R1.A1, R1.A2,
+           R1.A3, R1.S1);
+    printf("R2.A1,R2.A2,R2.A3,R2.S1 = %lf %lf %lf %lf\r\n", R2.A1, R2.A2,
+           R2.A3, R2.S1);
+    printf("R3.A1,R3.A2,R3.A3,R3.S1 = %lf %lf %lf %lf\r\n", R3.A1, R3.A2,
+           R3.A3, R3.S1);
+    printf("R4.A1,R4.A2,R4.A3,R4.S1 = %lf %lf %lf %lf\r\n", R4.A1, R4.A2,
+           R4.A3, R4.S1);
+    printf("R5.A1,R5.A2,R5.A3,R5.S1 = %lf %lf %lf %lf\r\n", R5.A1, R5.A2,
+           R5.A3, R5.S1);
+    printf("R6.A1,R6.A2,R6.A3,R6.S1 = %lf %lf %lf %lf\r\n", R6.A1, R6.A2,
+           R6.A3, R6.S1);
+    printf("R7.A1,R7.A2,R7.A3,R7.S1 = %lf %lf %lf %lf\r\n", R7.A1, R7.A2,
+           R7.A3, R7.S1);
+    printf("R8.A1,R8.A2,R8.A3,R8.S1 = %lf %lf %lf %lf\r\n", R8.A1, R8.A2,
+           R8.A3, R8.S1);
+    printf("R9.A1,R9.A2,R9.A3,R9.S1 = %lf %lf %lf %lf\r\n", R9.A1, R9.A2,
+           R9.A3, R9.S1);
+    printf("R10.A1,R10.A2,R10.A3,R10.S1 = %lf %lf %lf %lf\r\n", R10.A1, R10.A2,
+           R10.A3, R10.S1);
+    printf("R11.A1,R11.A2,R11.A3,R11.S1 = %lf %lf %lf %lf\r\n", R11.A1, R11.A2,
+           R11.A3, R11.S1);
+    printf("R12.A1,R12.A2,R12.A3,R12.S1 = %lf %lf %lf %lf\r\n", R12.A1, R12.A2,
+           R12.A3, R12.S1);
+    printf("R13.A1,R13.A2,R13.A3,R13.S1 = %lf %lf %lf %lf\r\n", R13.A1, R13.A2,
+           R13.A3, R13.S1);
+    printf("R14.A1,R14.A2,R14.A3,R14.S1 = %lf %lf %lf %lf\r\n", R14.A1, R14.A2,
+           R14.A3, R14.S1);
+    printf("R15.A1,R15.A2,R15.A3,R15.S1 = %lf %lf %lf %lf\r\n", R15.A1, R15.A2,
+           R15.A3, R15.S1);
+    printf("R16.A1,R16.A2,R16.A3,R16.S1 = %lf %lf %lf %lf\r\n", R16.A1, R16.A2,
+           R16.A3, R16.S1);
+    printf("R17.A1,R17.A2,R17.A3,R17.S1 = %lf %lf %lf %lf\r\n", R17.A1, R17.A2,
+           R17.A3, R17.S1);
+    printf("R18.A1,R18.A2,R18.A3,R18.S1 = %lf %lf %lf %lf\r\n", R18.A1, R18.A2,
+           R18.A3, R18.S1);
+    printf("R19.A1,R19.A2,R19.A3,R19.S1 = %lf %lf %lf %lf\r\n", R19.A1, R19.A2,
+           R19.A3, R19.S1);
+    printf("R20.A1,R20.A2,R20.A3,R20.S1 = %lf %lf %lf %lf\r\n", R20.A1, R20.A2,
+           R20.A3, R20.S1);
+    printf("R21.A1,R21.A2,R21.A3,R21.S1 = %lf %lf %lf %lf\r\n", R21.A1, R21.A2,
+           R21.A3, R21.S1);
+    printf("R22.A1,R22.A2,R22.A3,R22.S1 = %lf %lf %lf %lf\r\n", R22.A1, R22.A2,
+           R22.A3, R22.S1);
+    printf("R23.A1,R23.A2,R23.A3,R23.S1 = %lf %lf %lf %lf\r\n", R23.A1, R23.A2,
+           R23.A3, R23.S1);
+    printf("R24.A1,R24.A2,R24.A3,R24.S1 = %lf %lf %lf %lf\r\n", R24.A1, R24.A2,
+           R24.A3, R24.S1);
+    printf("R25.A1,R25.A2,R25.A3,R25.S1 = %lf %lf %lf %lf\r\n", R25.A1, R25.A2,
+           R25.A3, R25.S1);
+    printf("R26.A1,R26.A2,R26.A3,R26.S1 = %lf %lf %lf %lf\r\n", R26.A1, R26.A2,
+           R26.A3, R26.S1);
+    printf("R27.A1,R27.A2,R27.A3,R27.S1 = %lf %lf %lf %lf\r\n", R27.A1, R27.A2,
+           R27.A3, R27.S1);
+
+    printf("\r\n");
+    printf("ptSai.levEsq  = %lf\r\n", ptSai.levEsq);
+    printf("ptSai.Esq = %lf\r\n", ptSai.Esq);
+    printf("ptSai.Frente  = %lf\r\n", ptSai.Frente);
+    printf("ptSai.levDir  = %lf\r\n", ptSai.levDir);
+    printf("ptSai.Dir = %lf\r\n", ptSai.Dir);
 
     calculaSaida();
     printf("\r\n");
-    printf("Saida = %lf", saida);
+    printf("Saida = %lf\r\n", saida);
 }
 
 
