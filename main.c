@@ -69,7 +69,6 @@ struct regra R11;
 struct regra R12;
 struct regra R14;
 struct regra R13;
-struct regra R14;
 struct regra R15;
 struct regra R16;
 struct regra R17;
@@ -699,13 +698,6 @@ void loop() {
     avaliaFuzzy();
     calculaSaida();
 
-    /*
-     * Esquerda -> Motor E: 0 Motor D: 255 - Faixa: 0-20
-     * Levemente Esquerda -> Motor E: 128 Motor D: 255 - Faixa: 21-40
-     * Frente -> Motor E: 255 Motor D: 255 - Faixa: 41-55
-     * Levemente Direita -> Motor E: 255 Motor D: 128 - Faixa: 55-80
-     * Direita -> Motor E: 255 Motor D: 0 - Faixa: 81-100
-     */
     if(saida<21){ // Write dos motores
         analogWrite(motor1b, 0);
         analogWrite(motor2b, 255);
@@ -730,6 +722,15 @@ void loop() {
         analogWrite(motor1b, 255);
         analogWrite(motor2b, 0);
     }
+
+    /*
+     * Esquerda -> Motor E: 0 Motor D: 255 - Faixa: 0-20
+     * Levemente Esquerda -> Motor E: 128 Motor D: 255 - Faixa: 21-40
+     * Frente -> Motor E: 255 Motor D: 255 - Faixa: 41-55
+     * Levemente Direita -> Motor E: 255 Motor D: 128 - Faixa: 55-80
+     * Direita -> Motor E: 255 Motor D: 0 - Faixa: 81-100
+     */
+
 }
 
 int main() {
