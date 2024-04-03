@@ -10,12 +10,12 @@ Tipo Massa(Kg) Valor
  3      2       50
 */
 
-#define num_ind 100 // numero de indivíduos na população
+#define num_ind 10 // numero de indivíduos na população
 #define taxa_mutacao 20 // taxa de mutação em %
-#define limitePeso 100 // capacidade máxima de peso da mochila
-#define disponibilidade_1 50 // quantidade disponível do ítem 1
-#define disponibilidade_2 50 // quantidade disponível do ítem 2
-#define disponibilidade_3 50 // quantidade disponível do ítem 3
+#define limitePeso 20 // capacidade máxima de peso da mochila
+#define disponibilidade_1 5 // quantidade disponível do ítem 1
+#define disponibilidade_2 5 // quantidade disponível do ítem 2
+#define disponibilidade_3 5 // quantidade disponível do ítem 3
 
 int populacao[num_ind][3]; //[tipo 1] [tipo 2] [tipo 3]
 int novaPopulacao[num_ind][3]; //armazena a geração seguinte durante a reprodução
@@ -243,7 +243,7 @@ int main()
     i=encontraMelhor();
     printf("Melhor individuo %d Fitness = R$%d\n",i,fitness[i]);
     printf("Fitness total %d\n----------------------------------------------\n",fitnessTotal);
-    //getchar(); // comente esta linha para rodar o algoritmo até o final
+    getchar(); // comente esta linha para rodar o algoritmo até o final
     while(contGeracao<100)
     {
         contGeracao++;
@@ -261,6 +261,6 @@ int main()
         }
         printf("Melhor individuo %d Fitness = R$%d\n",i,fitness[i]);
         printf("Fitness total %d\n---------------------------------------------\n",fitnessTotal);
-        //getchar(); // comente esta linha para rodar o algoritmo até o final
+        getchar(); // comente esta linha para rodar o algoritmo até o final
     }
 }
