@@ -14,11 +14,12 @@ const int analogInPin1 = A0; //Direita
 const int analogInPin2 = A1;
 const int analogInPin3 = A2;
 const int analogInPin4 = A3; //Esquerda
+
 int sensorValue1 = 0;
 int sensorValue2 = 0;
 int sensorValue3 = 0;
 int sensorValue4 = 0;
-int sensorValueMed = 0; // Var para armazenar média dos sensores 2 e 3
+int sensorValue23 = 0; // Var para armazenar média dos sensores 2 e 3
 
 // Var dos motores
 const int motor1a = 5; // Motor direita
@@ -107,8 +108,8 @@ P8  700
 */
 
 void calculaPertinenciaSensorEsquerdo(double valor,
-                              double P1, double P2, double P3, double P4,
-                              double P5, double P6, double P7, double P8){ // Calculo da pertinência de cada cor para o Sensor Esquerdo
+                                      double P1, double P2, double P3, double P4,
+                                      double P5, double P6, double P7, double P8){ // Calculo da pertinência de cada cor para o Sensor Esquerdo
     // Branco
     if(valor<P1){
         pertcorEsq.Branco = 1.0;
@@ -145,8 +146,8 @@ void calculaPertinenciaSensorEsquerdo(double valor,
 }
 
 void calculaPertinenciaSensorCentro(double valor,
-                                      double P1, double P2, double P3, double P4,
-                                      double P5, double P6, double P7, double P8){ // Calculo da pertinência de cada cor para o Sensor do Centro
+                                    double P1, double P2, double P3, double P4,
+                                    double P5, double P6, double P7, double P8){ // Calculo da pertinência de cada cor para o Sensor do Centro
     // Branco
     if(valor<P1){
         pertcorCent.Branco = 1.0;
@@ -183,8 +184,8 @@ void calculaPertinenciaSensorCentro(double valor,
 }
 
 void calculaPertinenciaSensorDireita(double valor,
-                                    double P1, double P2, double P3, double P4,
-                                    double P5, double P6, double P7, double P8){ // Calculo da pertinência de cada cor para o Sensor da Direita
+                                     double P1, double P2, double P3, double P4,
+                                     double P5, double P6, double P7, double P8){ // Calculo da pertinência de cada cor para o Sensor da Direita
     // Branco
     if(valor<P1){
         pertcorDir.Branco = 1.0;
@@ -226,7 +227,7 @@ void avaliaFuzzy() {
     R1.A1 = pertcorEsq.Preto;
     R1.A2 = pertcorCent.Preto;
     R1.A3 = pertcorDir.Preto;
-        R1.S1 = R1.A1;
+    R1.S1 = R1.A1;
     if(R1.A2 < R1.A1 && R1.A2 < R1.A3){
         R1.S1 = R1.A2;
     }
@@ -238,7 +239,7 @@ void avaliaFuzzy() {
     R2.A1 = pertcorEsq.Preto;
     R2.A2 = pertcorCent.Preto;
     R2.A3 = pertcorDir.Branco;
-        R2.S1 = R2.A1;
+    R2.S1 = R2.A1;
     if(R2.A2 < R2.A1 && R2.A2 <R2.A3){
         R2.S1 = R2.A2;
     }
@@ -250,7 +251,7 @@ void avaliaFuzzy() {
     R3.A1 = pertcorEsq.Preto;
     R3.A2 = pertcorCent.Preto;
     R3.A3 = pertcorDir.Cinza;
-        R3.S1 = R3.A1;
+    R3.S1 = R3.A1;
     if(R3.A2 < R3.A1 && R3.A2 <R3.A3){
         R3.S1 = R3.A2;
     }
@@ -262,7 +263,7 @@ void avaliaFuzzy() {
     R4.A1 = pertcorEsq.Preto;
     R4.A2 = pertcorCent.Branco;
     R4.A3 = pertcorDir.Preto;
-        R4.S1 = R4.A1;
+    R4.S1 = R4.A1;
     if(R4.A2 < R4.A1 && R4.A2 <R4.A3){
         R4.S1 = R4.A2;
     }
@@ -274,7 +275,7 @@ void avaliaFuzzy() {
     R5.A1 = pertcorEsq.Preto;
     R5.A2 = pertcorCent.Branco;
     R5.A3 = pertcorDir.Branco;
-        R5.S1 = R5.A1;
+    R5.S1 = R5.A1;
     if(R5.A2 < R5.A1 && R5.A2 <R5.A3){
         R5.S1 = R5.A2;
     }
@@ -286,7 +287,7 @@ void avaliaFuzzy() {
     R6.A1 = pertcorEsq.Preto;
     R6.A2 = pertcorCent.Branco;
     R6.A3 = pertcorDir.Cinza;
-        R6.S1 = R6.A1;
+    R6.S1 = R6.A1;
     if(R6.A2 < R6.A1 && R6.A2 <R6.A3){
         R6.S1 = R6.A2;
     }
@@ -298,7 +299,7 @@ void avaliaFuzzy() {
     R7.A1 = pertcorEsq.Preto;
     R7.A2 = pertcorCent.Cinza;
     R7.A3 = pertcorDir.Preto;
-        R7.S1 = R6.A1;
+    R7.S1 = R6.A1;
     if(R7.A2 < R7.A1 && R7.A2 <R7.A3){
         R7.S1 = R7.A2;
     }
@@ -674,69 +675,75 @@ void calculaSaida() {
     saida = num / den;
 }
 
-void setup() { // Setup da pinagem dos motores
-    pinMode(motor1a, OUTPUT); // Definição do OutPut para os motores
+void setup() {
+// configura os pinos de controle dos motores como saída
+    pinMode(motor1a, OUTPUT);
     pinMode(motor1b, OUTPUT);
     pinMode(motor2a, OUTPUT);
     pinMode(motor2b, OUTPUT);
-    digitalWrite(motor1a, LOW); // Ajuste dos motores
+// ajusta os motores para andar para frente
+    digitalWrite(motor1a, LOW);
     digitalWrite(motor2a, LOW);
 }
 
+
 void loop() {
-    sensorValue1 = analogRead(analogInPin1); // Leitura dos valores disponibilizados pelos sensores
+    // lê os valores dos sensores
+    sensorValue1 = analogRead(analogInPin1);
     sensorValue2 = analogRead(analogInPin2);
     sensorValue3 = analogRead(analogInPin3);
     sensorValue4 = analogRead(analogInPin4);
+    //calcula a média dos sensores centrais e soma um offset de 50
+    sensorValue23=((sensorValue2+sensorValue3)/2)+50;
 
-    sensorValueMed=((sensorValue2+sensorValue3)/2)+50; // Cálculo da média dos valores dos sensores centrais do robô
-
-    calculaPertinenciaSensorEsquerdo(sensorValue4,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0);
-    calculaPertinenciaSensorCentro(sensorValueMed,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0);
-    calculaPertinenciaSensorDireita(sensorValue1,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0);
+    calculaPertinenciaSensorEsquerdo(sensorValue4, 250.0, 300.0, 350.0, 400.0, 450.0, 500.0, 550.0, 600.0);
+    calculaPertinenciaSensorCentro(sensorValue23, 250.0, 300.0, 350.0, 400.0, 450.0, 500.0, 550.0, 600.0);
+    calculaPertinenciaSensorDireita(sensorValue1, 250.0, 300.0, 350.0, 400.0, 450.0, 500.0, 550.0, 600.0);
+    //200.0, 300.0, 400.0, 500.0, 550.0, 600.0, 650.0, 700.0
 
     avaliaFuzzy();
-    calculaSaida();
 
-    if(saida<21){ // Write dos motores
+    calculaSaida();
+    /*
+    E - ME 0 e MD 255 - FAIXA 0-20
+    LE - ME 130 e MD 255 - FAIXA 21-44
+    RT - ME 255 e MD 255 - FAIXA 45-55
+    LD - ME 255 e MD 130 - FAIXA 46-79
+    D - ME 255 e MD 0 - FAIXA 81-100
+    */
+    analogWrite(motor1b, 150);
+    analogWrite(motor2b, 150);
+
+    if(saida<19){
         analogWrite(motor1b, 0);
         analogWrite(motor2b, 255);
     }
 
-    if(saida>20 && saida<40){
+    if(saida>=20 && saida<45){
         analogWrite(motor1b, 50);
         analogWrite(motor2b, 255);
     }
 
-    if(saida>=41 && saida<55){
+    if(saida>44 && saida<56){
         analogWrite(motor1b, 255);
         analogWrite(motor2b, 255); ;
     }
 
-    if(saida>=55 && saida<80){
+    if(saida>55 && saida<80){
         analogWrite(motor1b, 255);
         analogWrite(motor2b, 50);
     }
 
-    if(saida>=81){
+    if(saida>79){
         analogWrite(motor1b, 255);
         analogWrite(motor2b, 0);
     }
-
-    /*
-     * Esquerda -> Motor E: 0 Motor D: 255 - Faixa: 0-20
-     * Levemente Esquerda -> Motor E: 128 Motor D: 255 - Faixa: 21-40
-     * Frente -> Motor E: 255 Motor D: 255 - Faixa: 41-55
-     * Levemente Direita -> Motor E: 255 Motor D: 128 - Faixa: 55-80
-     * Direita -> Motor E: 255 Motor D: 0 - Faixa: 81-100
-     */
-
 }
-
+/*
 int main() {
     /*
-    double esq = 150.0;
-    double centro = 200.0;
+    double esq = 350.0;
+    double centro = 500.0;
     double dir = 400.0;
 
     calculaPertinenciaSensorEsquerdo(esq,250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0);
@@ -819,7 +826,7 @@ int main() {
     calculaSaida();
     printf("\r\n");
     printf("Saida = %lf\r\n", saida);
-     */
-}
+
+}*/
 
 
