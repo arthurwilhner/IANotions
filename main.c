@@ -714,12 +714,12 @@ void loop() {
     analogWrite(motor1b, 150);
     analogWrite(motor2b, 150);
 
-    if(saida<19){
+    if(saida<21){
         analogWrite(motor1b, 0);
         analogWrite(motor2b, 255);
     }
 
-    if(saida>=20 && saida<45){
+    if(saida>20 && saida<45){
         analogWrite(motor1b, 50);
         analogWrite(motor2b, 255);
     }
