@@ -1,2 +1,1 @@
 // Exercício Redes Neurais
-//hdasidhauhdauidhuais
