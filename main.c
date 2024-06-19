@@ -3,82 +3,80 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define INPUT_NEURONS 4
-#define HIDDEN_NEURONS 5
-#define OUTPUT_NEURONS 3
-#define LEARNING_RATE 0.1
-#define EPOCHS 10000
+#define NEURONIOS_ENTRADA 4
+#define NEURONIOS_OCULTOS 5
+#define NEURONIOS_SAIDA 3
 
-// Sigmoid activation function
+// Função de ativação sigmoid
 double sigmoid(double x) {
     return 1.0 / (1.0 + exp(-x));
 }
 
-// Derivative of sigmoid
-double sigmoid_derivative(double x) {
+// Derivada da função sigmoid
+double derivada_sigmoid(double x) {
     return x * (1 - x);
 }
 
-// Random double between -1.0 and 1.0 for weight initialization
-double random_weight() {
+// Função que retorna um número aleatório entre -1.0 e 1.0 para inicialização dos pesos
+double peso_aleatorio() {
     return 2.0 * ((double)rand() / RAND_MAX) - 1.0;
 }
 
-// Neural network structure
+// Estrutura da rede neural
 typedef struct {
-    double input[INPUT_NEURONS];
-    double hidden[HIDDEN_NEURONS];
-    double output[OUTPUT_NEURONS];
-    double weights_ih[INPUT_NEURONS][HIDDEN_NEURONS];
-    double weights_ho[HIDDEN_NEURONS][OUTPUT_NEURONS];
-} NeuralNetwork;
+    double entrada[NEURONIOS_ENTRADA];
+    double oculto[NEURONIOS_OCULTOS];
+    double saida[NEURONIOS_SAIDA];
+    double pesos_eo[NEURONIOS_ENTRADA][NEURONIOS_OCULTOS];
+    double pesos_os[NEURONIOS_OCULTOS][NEURONIOS_SAIDA];
+} RedeNeural;
 
-// Initialize the neural network weights
-void initialize_network(NeuralNetwork *nn) {
-    for (int i = 0; i < INPUT_NEURONS; i++) {
-        for (int j = 0; j < HIDDEN_NEURONS; j++) {
-            nn->weights_ih[i][j] = random_weight();
+// Inicializa os pesos da rede neural
+void inicializa_rede(RedeNeural *rn) {
+    for (int i = 0; i < NEURONIOS_ENTRADA; i++) {
+        for (int j = 0; j < NEURONIOS_OCULTOS; j++) {
+            rn->pesos_eo[i][j] = peso_aleatorio();
         }
     }
-    for (int j = 0; j < HIDDEN_NEURONS; j++) {
-        for (int k = 0; k < OUTPUT_NEURONS; k++) {
-            nn->weights_ho[j][k] = random_weight();
+    for (int j = 0; j < NEURONIOS_OCULTOS; j++) {
+        for (int k = 0; k < NEURONIOS_SAIDA; k++) {
+            rn->pesos_os[j][k] = peso_aleatorio();
         }
     }
 }
 
-// Feedforward operation
-void feedforward(NeuralNetwork *nn) {
-    for (int j = 0; j < HIDDEN_NEURONS; j++) {
-        nn->hidden[j] = 0;
-        for (int i = 0; i < INPUT_NEURONS; i++) {
-            nn->hidden[j] += nn->input[i] * nn->weights_ih[i][j];
+// Operação de feedforward
+void feedforward(RedeNeural *rn) {
+    for (int j = 0; j < NEURONIOS_OCULTOS; j++) {
+        rn->oculto[j] = 0;
+        for (int i = 0; i < NEURONIOS_ENTRADA; i++) {
+            rn->oculto[j] += rn->entrada[i] * rn->pesos_eo[i][j];
         }
-        nn->hidden[j] = sigmoid(nn->hidden[j]);
+        rn->oculto[j] = sigmoid(rn->oculto[j]);
     }
 
-    for (int k = 0; k < OUTPUT_NEURONS; k++) {
-        nn->output[k] = 0;
-        for (int j = 0; j < HIDDEN_NEURONS; j++) {
-            nn->output[k] += nn->hidden[j] * nn->weights_ho[j][k];
+    for (int k = 0; k < NEURONIOS_SAIDA; k++) {
+        rn->saida[k] = 0;
+        for (int j = 0; j < NEURONIOS_OCULTOS; j++) {
+            rn->saida[k] += rn->oculto[j] * rn->pesos_os[j][k];
         }
-        nn->output[k] = sigmoid(nn->output[k]);
+        rn->saida[k] = sigmoid(rn->saida[k]);
     }
 }
 
 int main() {
-    NeuralNetwork nn;
-    initialize_network(&nn);
+    RedeNeural rn;
+    inicializa_rede(&rn);
 
-    // Example of setting inputs and running the network
-    nn.input[0] = 1;
-    nn.input[1] = 0;
-    nn.input[2] = 1;
-    nn.input[3] = 1;
-    feedforward(&nn);
-    printf("Output X: %f\n", nn.output[0]);
-    printf("Output Y: %f\n", nn.output[1]);
-    printf("Output Z: %f\n", nn.output[2]);
+    // Exemplo de definição de entradas e execução da rede
+    rn.entrada[0] = 1;
+    rn.entrada[1] = 0;
+    rn.entrada[2] = 1;
+    rn.entrada[3] = 1;
+    feedforward(&rn);
+    printf("Saida X: %f\n", rn.saida[0]);
+    printf("Saida Y: %f\n", rn.saida[1]);
+    printf("Saida Z: %f\n", rn.saida[2]);
 
     return 0;
 }
