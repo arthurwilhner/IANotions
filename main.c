@@ -189,7 +189,6 @@ int main() {
     int i;
     int cont;
     int contGeracao = 0;
-    printf("Pressione CONTRO-C para sair\n");
     inicializaPopulacao();
     calculaFitness();
     printf("Geracao %d \n", contGeracao);
